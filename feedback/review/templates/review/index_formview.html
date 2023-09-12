@@ -5,7 +5,7 @@
 {% block content %}
     <form action="/" method="POST">
         {% csrf_token %}
-        {% for single_field in html_form %}
+        {% for single_field in form %}
             <div class="form-control {% if html_form.user_name.errors %}my_errors{% endif %}">
                 {{ single_field.label_tag }}
                 {{ single_field }}

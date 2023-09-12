@@ -1,11 +1,50 @@
+from typing import Any
+from django.db.models.query import QuerySet
 from django.shortcuts import render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
+
 
 from .forms import AutoReviewForm, ReviewForm
 from .models import Review
 
 from django.views import View
+from django.views.generic.base import TemplateView
+from django.views.generic import ListView, DetailView
+from django.views.generic.edit import FormView, CreateView
+
+
 # Create your views here.
+
+#########################CLASS VIEWS OR DEF############################################
+#----------------------------------------------------------------[CreateView] - super
+class ReviewView4(CreateView):
+    #GET method
+    model = Review
+    #Auto without custom labels/error messages
+    # fields = "__all__" # which db fields in form 
+
+    #My labels/error messages
+    form_class = AutoReviewForm
+    template_name = "review/index_formview.html"
+    #POST method
+    success_url = "/thank-you"
+
+#----------------------------------------------------------------[FormView] - super
+class ReviewView3(FormView):
+    #GET method
+    #Modelform
+    form_class = AutoReviewForm
+    template_name = "review/index_formview.html"
+    #POST method
+    success_url = "/thank-you"
+    #Save form data
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
+
+
+
+#----------------------------------------------------------------[View] -super (GET/POST)
 class ReviewView(View):
     def get(self, request):
         first_form = AutoReviewForm()
@@ -16,30 +55,97 @@ class ReviewView(View):
 
         if first_form.is_valid():
             first_form.save()
-            return HttpResponseRedirect("/thanks")
+            return HttpResponseRedirect("/thank-you")
         
         return render(request, "review/index.html", {"html_form": first_form,})
 
 
-# #--------------------MODELFORM------------#
-# def index(request):
-#     if request.method == "POST":
-#         existing_data = Review.objects.get(pk=1)
-#         first_form = AutoReviewForm(request.POST, instance=existing_data)
 
-#         if first_form.is_valid():
-#             first_form.save()
-#             return HttpResponseRedirect("/thanks")
+######################Thank You 3 methods######################################
+# --------------------------------------------------------------------[Def]  - super
+def thank_you(request):
+    return render(request, "review/thank.html", {
+        "html_message": "This is passed context text!",
+        })
+#----------------------------------------------------------------[Template View] - long
+class ThankYouView(TemplateView):
+    template_name= "review/thank.html"
 
-#     else:
-#         first_form = AutoReviewForm()
-#     return render(request, "review/index.html", {"html_form": first_form,})
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["html_message"] = "This is passed context text!"
+        return context
+
+#--------------------------------------------------------------------[Class View]
+# class ThankYouView(View):
+#     def get(self, request):
+#         return render(request, "review/thank.html")
+
+
+
+
+######################List all reviews 2 methods######################################
+#---------------------------------------------------------------------[ListView] -super
+class ReviewListView2(ListView):
+    template_name="review/review_list_listview.html"
+    model = Review
+    context_object_name = "html_all_reviews2"
+
+    def get_queryset(self):
+        base_query = super().get_queryset()
+        data = base_query.filter(rating__gt=2)
+        return data
+# --------------------------------------------------------------------[TemplateView]
+# class ReviewListView(TemplateView):
+#     template_name="review/review_list.html"
+
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         all_reviews = Review.objects.all()
+#         context["html_all_reviews"] = all_reviews
+#         return context
+
+######################Single review 2 methods######################################
+#--------------------------------------------------------------------[DetailView] -super
+class SingleReviewView2(DetailView):
+    template_name="review/single_review_detailview.html"
+    model = Review
+# --------------------------------------------------------------------[TemplateView]
+# class SingleReviewView(TemplateView):
+#     template_name="review/single_review.html"
+
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         review_id = kwargs["rev_id"]
+#         selected_review = Review.objects.get(pk=review_id)
+#         context["html_selected_review"] = selected_review
+#         return context
+
+
+
+
+
+#############################FORM 3 METHODS TO MAKE############################
+
+# -----------------------------------[MODELFORM] - the best and fast way to create form
+def index(request):
+    if request.method == "POST":
+        existing_data = Review.objects.get(pk=1)
+        first_form = AutoReviewForm(request.POST, instance=existing_data)
+
+        if first_form.is_valid():
+            first_form.save()
+            return HttpResponseRedirect("/thanks")
+
+    else:
+        first_form = AutoReviewForm()
+    return render(request, "review/index.html", {"html_form": first_form,})
 
 def thank_you(request):
     return render(request, "review/thank.html")
 
 
-# #-------------------------HANDY FORM------------------------#
+# #-------------------------[HANDY FORM with create DB object] - ok but slow
 # def index(request):
 #     if request.method == "POST":
 #         first_form = ReviewForm(request.POST)
@@ -61,7 +167,7 @@ def thank_you(request):
 #     return render(request, "review/thank.html")
 
 
-#####################Handy Form###############################
+#---------------------------------------------------------[Handy HTML Form] - not good!!!
 # def index(request):
 #     if request.method == "POST":
 #         entered_username = request.POST['username_field']
