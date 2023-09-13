@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+</head>
+<body>
+    <ul>
+        {% for single_profile in html_profiles %}
+            {% if single_profile.zimage %}
+            <li>
+                <img src="{{ single_profile.zimage.url }}" alt="">
+            </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</body>
+</html>
