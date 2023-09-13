@@ -109,7 +109,23 @@ class ReviewListView2(ListView):
 #--------------------------------------------------------------------[DetailView] -super
 class SingleReviewView2(DetailView):
     template_name="review/single_review_detailview.html"
-    model = Review
+    model = Review# this DetailView get object (single_review)in context
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs) # now in context we have Review object
+        view_loaded_review = self.object 
+        view_request = self.request
+        eefavorite_id = view_request.session["zz_favorite_review"]
+        #save way - don't make crash if not favorite id in session
+        eefavorite_id = view_request.session.get("zz_favorite_review") # return None if key is not exist
+        # if eefavorite_id == str(view_loaded_review.id):
+        # # I add new info/data to my object
+        #     context["tag_is_favorite"] = True
+        #     return context
+        # I add new info/data to my object if id are equal
+        context["tag_is_favorite"] = eefavorite_id == str(view_loaded_review.id)
+        return context
+
 # --------------------------------------------------------------------[TemplateView]
 # class SingleReviewView(TemplateView):
 #     template_name="review/single_review.html"
@@ -121,6 +137,13 @@ class SingleReviewView2(DetailView):
 #         context["html_selected_review"] = selected_review
 #         return context
 
+class AddFavoriteView(View):
+    def post(self, request):
+        fav_review_id = request.POST["aareview_id"]
+        # my_fav_review = Review.objects.get(pk=fav_review_id)# this object, can't be JSON
+        # request.session["zz_favorite_review"] = my_fav_review
+        request.session["zz_favorite_review"] = fav_review_id # correct for JSON format
+        return HttpResponseRedirect("/reviews/"+ fav_review_id) # redirect to SingleReviewView2
 
 
 

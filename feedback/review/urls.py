@@ -11,6 +11,7 @@ urlpatterns = [
     # path("reviews", views.ReviewListView.as_view()),#-----------------TemplateView
     path("reviews2", views.ReviewListView2.as_view()),#-----------------[ListView]--super
     # path("reviews/<int:rev_id>", views.SingleReviewView.as_view()),#--TemplateView
+    path("reviews/favorite", views.AddFavoriteView.as_view()),
     path("reviews/<int:pk>", views.SingleReviewView2.as_view()),#-------[DetailView]--super
 
 ]
